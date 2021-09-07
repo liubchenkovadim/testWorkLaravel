@@ -6,6 +6,7 @@
 - add settings database in file .env
 
 
+
     php artisan migrate
 
 
