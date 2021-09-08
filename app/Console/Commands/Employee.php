@@ -2,10 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmployeeSkill;
-use App\Models\Skill;
+use App\Services\EmployeeCheck;
 use Illuminate\Console\Command;
-use App\Models\Employee as EmployeeModel;
 
 class Employee extends Command
 {
@@ -23,13 +21,15 @@ class Employee extends Command
      */
     protected $description = 'Displaying the list of skills employee.';
 
+    private $check;
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(EmployeeCheck $check)
     {
+        $this->check = $check;
         parent::__construct();
     }
 
@@ -41,20 +41,17 @@ class Employee extends Command
     public function handle()
     {
         $user = $this->argument('user');
-        $employee = EmployeeModel::where('name', $user)->first();
-        if (!is_null($employee)) {
-            $skils = EmployeeSkill::where('employee_id', $employee->id)->get();
-            $this->info("Employee {$user} skills:");
-            foreach ($skils as $skill) {
-                $name = Skill::find($skill->skill_id);
-                $this->info("- {$name->name}");
+        $result = $this->check->getSkillForEmployee($user);
+        if(!empty($result)){
+            if(isset($result['error'])){
+                foreach ($result['error'] as $error){
+                    $this->error($error);
+                }
             }
-        } else {
-            $this->error("Employee {$user} not exists!");
-            $employees = EmployeeModel::all();
-            $this->info("Employee exists:");
-            foreach ($employees as $employee) {
-                $this->info("- {$employee->name}");
+            if(isset($result['info'])){
+                foreach ($result['info'] as $info){
+                    $this->info($info);
+                }
             }
         }
 
