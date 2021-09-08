@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\EmployeeSkill;
 use App\Models\Skill;
 use App\Models\Employee;
+use App\Services\SkillCheck;
 use Illuminate\Console\Command;
 
 class Can extends Command
@@ -23,13 +24,15 @@ class Can extends Command
      */
     protected $description = 'Checking the skills of employees';
 
+    private $check;
     /**
      * Create a new command instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(SkillCheck $check)
     {
+        $this->check = $check;
         parent::__construct();
     }
 
@@ -42,35 +45,19 @@ class Can extends Command
     {
         $user = $this->argument('user');
         $skill = $this->argument('skill');
-        $employee = Employee::where('name', $user)->first();
-        if (!is_null($employee)) {
-            $skill_name = Skill::where('key', $skill)->first();
-            if (!is_null($skill_name)) {
-                $checked = EmployeeSkill::where('employee_id', $employee->id)
-                    ->where('skill_id', $skill_name->id)
-                    ->first();
-                if (!is_null($checked)) {
-                    $this->info("true");
-                } else {
-                    $this->error("false");
-                }
-            } else {
-                $this->error("Skill {$skill} not exists!");
-                $skills = Skill::all();
-                $this->info("Skill exists:");
-                foreach ($skills as $item) {
-                    $this->info("-  key = {$item->key}");
+        $result = $this->check->getCheckSkillExists($user,$skill);
+        if(!empty($result)){
+            if(isset($result['error'])){
+                foreach ($result['error'] as $error){
+                    $this->error($error);
                 }
             }
-        } else {
-            $this->error("Employee {$user} not exists!");
-            $employees = Employee::all();
-            $this->info("Employee exists:");
-            foreach ($employees as $employee) {
-                $this->info("- {$employee->name}");
+            if(isset($result['info'])){
+                foreach ($result['info'] as $info){
+                    $this->info($info);
+                }
             }
         }
-
         return 0;
     }
 }
