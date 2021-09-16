@@ -54,3 +54,5 @@
     WHERE category_id IN (3,4,5);
 
 Схема картинка  img/mysqldiagram-4.png
+
+БД в файле task2.sql
