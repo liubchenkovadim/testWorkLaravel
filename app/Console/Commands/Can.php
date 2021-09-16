@@ -2,10 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\EmployeeSkill;
-use App\Models\Skill;
-use App\Models\Employee;
-use App\Services\SkillCheck;
+use App\Services\EmployeeCheck;
 use Illuminate\Console\Command;
 
 class Can extends Command
@@ -30,7 +27,7 @@ class Can extends Command
      *
      * @return void
      */
-    public function __construct(SkillCheck $check)
+    public function __construct(EmployeeCheck $check)
     {
         $this->check = $check;
         parent::__construct();
